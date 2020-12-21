@@ -63,5 +63,4 @@ async def on_message(message):
 
 load_data()
 print("Connecting...", end="\r")
-<<<<<<< HEAD
 client.run(TOKEN)
