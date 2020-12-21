@@ -59,4 +59,4 @@ async def on_message(message):
 
 load_data()
 print("Connecting...", end="\r")
-client.run('Nzg2ODg0Mzk3Mjc3MTE4NTA0.X9M5Mw.SCzWFdA0n3LVoXM4ivloVBUnuPs')
+client.run('insert token here')
