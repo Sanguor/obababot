@@ -21,6 +21,8 @@ from safe_eval import safe_eval
 
 @command
 async def help(message, *args, **kwargs):
+    """Provides information about the bot and its functions"""
+
     if not args:
         docs = {name: f.__doc__ for name, f in usercommands.items()}
         docs = {k:v.split("\n",1)[0] for k,v in docs.items() if v and k.startswith(prefix)}
