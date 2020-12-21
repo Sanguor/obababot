@@ -1,15 +1,19 @@
 print("Importing modules...", end="\r")
-
 import discord
+import sys
 import re
 import threading
 import time
 import traceback
 from utilities import DataTables, reply, argparse, dictstr, load_data
 import commands
-
 print("Imported modules    ")
 
+
+if len(sys.argv) < 2:
+    TOKEN = input("Input bot token: ").strip('"')
+else:
+    TOKEN = sys.argv[1]
 
 # Terminal input
 def command_input():
@@ -59,4 +63,8 @@ async def on_message(message):
 
 load_data()
 print("Connecting...", end="\r")
+<<<<<<< HEAD
+client.run(TOKEN)
+=======
 client.run('insert token here')
+>>>>>>> 73146262e622d5abdf0645ce212ae4eaeeba124a
