@@ -65,6 +65,3 @@ load_data()
 print("Connecting...", end="\r")
 <<<<<<< HEAD
 client.run(TOKEN)
-=======
-client.run('insert token here')
->>>>>>> 73146262e622d5abdf0645ce212ae4eaeeba124a
