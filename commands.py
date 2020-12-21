@@ -270,20 +270,3 @@ async def sort(message, *args, **kwargs):
         fields.append(key)
     if output: await reply(message, f"```{tablestr(output, fields=fields)}```")
     else: await reply(message, "no match found")
-
-
-# @command
-# async def remind(message, *args, **kwargs):
-#     import json
-#     with open("userdata\\reminders.json", "r") as f:
-#         try:
-#             reminders = json.load(f)
-#         except json.decoder.JSONDecodeError:
-#             reminders = {}
-#     text = message.content[len("$setreminder "):]
-#     if reminders.get(str(message.author)):
-#         reminders[str(message.author)].append(text)
-#     else:
-#         reminders[str(message.author)] = [text]
-#     with open("userdata\\reminders.json", "w") as f:
-#         json.dump(reminders, f, indent=4)
