@@ -4,6 +4,8 @@ import sys
 
 
 ROM = sys.argv[1]
+pcnames = ["Isaac", "Garet", "Ivan", "Mia", "Felix", "Jenna", "Sheba", "Piers"]
+elements = ["Venus", "Mercury", "Mars", "Jupiter", "Neutral"]
 
 with open(r"text\GStext.txt") as f:
     text = f.read().splitlines()
@@ -16,12 +18,6 @@ with open(r"text\GStext.txt") as f:
     classes = text[2915:3159]
     djinn = text[1747:1827]
     summons = text[1827:1860]
-    pcnames = ["Isaac", "Garet", "Ivan", "Mia", "Felix", "Jenna", "Sheba", "Piers"]
-    elements = ["Venus", "Mercury", "Mars", "Jupiter", "Neutral"]
-    itemtypes = [
-        "Other", "Weapon", "Armor", "Armgear", "Headgear", "Boots", "Psy-item", 
-        "Trident", "Rings", "Shirts", "Class-item", "Elemental Star",
-    ]
 
 with open(r"text\customtext.txt") as f:
     text = f.read().splitlines()
@@ -39,7 +35,7 @@ with open(ROM, "rb") as f:
             "ID": i,
             "name": items[i],
             "price": read(2),
-            "item_type": itemtypes[read(1)],
+            "item_type": read(1),
             "flags": read(1),
             "equippable_by": read(1),
             "unused": read(1),
@@ -244,30 +240,37 @@ with open(ROM, "rb") as f:
             "unused": read(3),
         })
 
-
+# Items
+itemtypes = [
+    "Other", "Weapon", "Armor", "Armgear", "Headgear", "Boots", "Psy-item", 
+    "Trident", "Rings", "Shirts", "Class-item", "Elemental Star"]
+flagdesc = ["Curses when equipped", "Can't be removed", "Rare item", "Important item",
+        "Stackable", "Not transferable"]
+usetypes = ["Multi-Use", "Consumable", "Can Break", "Bestows ability", "Item transforms when used"]
 for item in itemdata:
     item.pop("unused")
+    item["item_type"] = itemtypes[item["item_type"]]
     item["effect_values"] = [i[1] for i in item["equipped_effects"] if i[0]]
     item["equipped_effects"] = [equipped_effects[i[0]]for i in item["equipped_effects"] if i[0]]
     item["equippable_by"] = [pcnames[i] for i in range(8) if item["equippable_by"] & 2**i]
-    flagdesc = ["Curses when equipped", "Can't be removed", "Rare item", "Important item",
-        "Stackable", "Not transferable"]
     item["flags"] = [flagdesc[i] for i in range(6) if item["flags"] & 2**i]
-    usetypes = ["Multi-Use", "Consumable", "Can Break", "Bestows ability", "Item transforms when used"]
     item["use_type"] = usetypes[item["use_type"]]
 
-for move in abilitydata:
-    move.pop("unused")
-    move["target"] = ["Utility", "Enemies", "Allies", "?", "Self"][move["target"]]
-    damagetypes = [
+# Abilities
+targets = ["Utility", "Enemies", "Allies", "?", "Self"]
+damagetypes = [
         "?", "Healing","Effect Only","Added Damage","Multiplier","Base Damage",
         "Base Damage (Diminishing)","Djinn Effect","Summon","Utility",
         "Psynergy Drain","Psynergy Recovery"]
+flagdesc = ["", "", "usable out of battle", "usable in battle"]
+for move in abilitydata:
+    move.pop("unused")
+    move["target"] = targets[move["target"]]
     move["damage_type"] = damagetypes[move["flags"] & 0xF]
     move["flags"] = move["flags"] >> 4
-    flagdesc = ["", "", "usable out of battle", "usable in battle"]
     move["flags"] = [flagdesc[i] for i in range(2, 4) if move["flags"] & 2**i]
 
+# Enemies
 for enemy in enemydata:
     enemy.pop("unused")
     enemy["items"] = [items[i] for i in enemy["items"] if i]
@@ -278,30 +281,33 @@ for enemy in enemydata:
     if itemID: itemdata[itemID]["dropped_by"].append(enemy["name"])
     enemy["item_drop"] = items[itemID]
 
+# PCs
 for pc in pcdata:
     pc.pop("unused")
     pc["starting_items"] = [items[i] for i in pc["starting_items"] if i]
 
+# Summons
 for summon in summondata:
     summon["hp_multiplier"] = sum(summon[k] for k in elements[0:4])*0.03
     if summon["ID"] == 24: summon["hp_multiplier"] = 0.07
     if summon["ID"] == 25: summon["hp_multiplier"] = 0.15
     if summon["ID"] == 29: summon["hp_multiplier"] = 0.40
 
+# Classes
+classgroups = [
+    "", "Squire", "Guard", "Swordsman", "Brute",
+    "Apprentice", "Water Seer", "Wind Seer", "Seer",
+    "Pilgrim", "Hermit", "", "NPC", "Flame User",
+    "Mariner", "Pierrot", "Tamer", "Dark Mage"]
 for class_ in classdata:
     class_.pop("unused")
     class_["abilities"] = {moves[k]: v for k,v in class_["abilities"] if k != 0}
-    classgroups = [
-        "", "Squire", "Guard", "Swordsman", "Brute",
-        "Apprentice", "Water Seer", "Wind Seer", "Seer",
-        "Pilgrim", "Hermit", "", "NPC", "Flame User",
-        "Mariner", "Pierrot", "Tamer", "Dark Mage"
-    ]
     class_["class_group"] = classgroups[class_["class_group"]]
     class_["weaknesses"] = [ability_effects[i] for i in class_["weaknesses"] if i]
     for k in ["HP", "PP", "ATK", "DEF", "AGI", "LCK"]:
         class_[k] /= 10
 
+# Element Presets
 for entry in elementdata:
     entry.pop("unused")
 
@@ -314,6 +320,7 @@ for djinni in djinndata:
     djinni["power"] = move["power"]
     djinni["description"] = move["description"]
 
+# Enemy Groups
 for group in enemygroupdata:
     group.pop("unused")
     entries = [i for i in range(5) if group["enemies"][i] != "???"]
