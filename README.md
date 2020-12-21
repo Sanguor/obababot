@@ -30,7 +30,8 @@ For convenience, the `$math` command may use an `=` sign in place of `$math `
 ## Setting up the Bot to run locally
  - Download the respository, and run `main.py`
  - Input the bot token, (may instead be input as the first argument to main.py)
- - To update the database, run gatherdata.py with the GS2 ROM as an argument
+ - To update the database, run `gatherdata.py` with the GS2 ROM as an argument
+ 
 If things worked properly, you should see this:
 ```
 Imported modules
