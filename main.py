@@ -5,7 +5,7 @@ import re
 import threading
 import time
 import traceback
-from utilities import DataTables, reply, argparse, dictstr, load_data
+from utilities import DataTables, UserData, reply, argparse, load_data
 import commands
 print("Imported modules    ")
 
@@ -37,13 +37,15 @@ client = discord.Client()
 
 @client.event
 async def on_ready():
-    print('Bot is ready')
+    print('Bot is ready ')
     command_thread.start()
 
 @client.event
 async def on_message(message):
     timestamp = time.time()
     if message.author == client.user: return
+    if message.guild.name == "Golden Sun Speedrunning" and message.channel.name != "botspam":
+        return
     text = message.content
     for name in commands.usercommands:
         if text.startswith(name):

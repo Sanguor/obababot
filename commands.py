@@ -15,7 +15,7 @@ def command(f=None, alias=None, prefix=prefix):
 ### Register functions and import modules below ###
 import re
 import inspect
-from utilities import DataTables, namemaps, load_data, reply, dictstr, tablestr
+from utilities import DataTables, UserData, namemaps, load_data, reply, dictstr, tablestr
 from safe_eval import safe_eval
 
 
@@ -49,6 +49,7 @@ async def info(message, *args, **kwargs):
         key -- an attribute of the returned object to view
         i -- instance number.  If the query returns multiple results, 
              this argument selects one of them
+        json -- set equal to 1 or "true" to format the output as json
     """
     instance = kwargs.get("i")
     key = kwargs.get("key")
@@ -78,6 +79,9 @@ async def index(message, *args, **kwargs):
         *condition -- searches data until condition is met
                       a mathematical expression that may contain object attribute names
                       set equal to a number to index normally
+    
+    Keyword Arguments:
+        json -- set equal to 1 or "true" to format the output as json
     """
     if len(args) < 2:
         await reply(message,
@@ -248,6 +252,7 @@ async def sort(message, *args, **kwargs):
 
     Keyword Arguments:
         range -- a section of the output to display.  Default is "0,20"
+                 if you input only one number, it will display that many entries
         fields -- additional attributes to display in the output, separated by commas
     """
     table = args[0]
@@ -272,3 +277,65 @@ async def sort(message, *args, **kwargs):
         fields.append(key)
     if output: await reply(message, f"```{tablestr(output, fields=fields)}```")
     else: await reply(message, "no match found")
+
+
+@command
+async def damage(message, *args, **kwargs):
+    """Damage Calculator
+
+    Arguments:
+        ability -- the name of the attack
+    
+    Keyword Arguments:
+        atk -- attack stat of attacker
+        pow -- elemental power of the attacker (for the attack's element)
+        target -- name of enemy.  auto-fills in kwargs for hp, def, and res
+        hp  -- hp of target
+        def -- defense stat of target
+        res -- resistance of target (for the attack's element)
+    """
+
+    elements = ["Venus", "Mercury", "Mars", "Jupiter"]
+    args = [arg.strip('"').lower() for arg in args]
+    kwargs = {k:v.strip('"').lower() for k,v in kwargs.items()}
+    abilityID = namemaps["abilitydata"][args[0]][0]
+    ability = DataTables["abilitydata"][abilityID]
+    ATK, DEF, HP, POW, RES, RANGE = [kwargs.get(kw) for kw in ("atk","def","hp","pow","res","range")]
+    if ATK is not None: ATK = int(ATK)
+    if DEF is not None: DEF = int(DEF)
+    if HP is not None: HP = int(HP)
+    if POW is not None: POW = int(POW)
+    if RES is not None: RES = int(RES)
+    if RANGE is not None: RANGE = int(RANGE)
+    target = kwargs.get("target")
+    if target:
+        enemyID = namemaps["enemydata"][target][0]
+        enemy = DataTables["enemydata"][enemyID]
+        if HP is None: HP = enemy["HP"]
+        if DEF is None: DEF = enemy["DEF"]
+        estats = DataTables["elementdata"][enemy["elemental_stats_id"]]
+        if RES is None: RES = estats.get(ability["element"] + "_Res")
+    if ability["damage_type"] == "Healing":
+        damage = ability["power"]*POW//100
+    elif ability["damage_type"] == "Added Damage":
+        damage = (ATK-DEF)/2 + ability["power"]
+        if ability["element"] != "Neutral":
+            damage *= 1 + (POW-RES)/400
+    elif ability["damage_type"] == "Multiplier":
+        damage = (ATK-DEF)/2*ability["power"]/10
+        if ability["element"] != "Neutral":
+            damage *= 1 + (POW-RES)/400
+    elif ability["damage_type"] == "Base Damage":
+        damage = ability["power"]*(1 + (POW-RES)/200)
+        if RANGE: damage *= [1, .8, .6, .4, .2, .1][RANGE]
+    elif ability["damage_type"] == "Base Damage (Diminishing)":
+        damage = ability["power"]*(1 + (POW-RES)/200)
+        if RANGE: damage *= [1, .5, .3, .1, .1, .1][RANGE]
+    elif ability["damage_type"] == "Summon":
+        summonID = namemaps["summondata"][args[0]][0]
+        summon = DataTables["summondata"][summonID]
+        damage = summon["power"] + summon["hp_multiplier"]*min(10000, HP)
+        damage *= (1 + (POW-RES)/200)
+        if RANGE: damage *= [1, .7, .4, .3, .2, .1][RANGE]
+    if int(damage) == damage: damage = int(damage)
+    await reply(message, f"```{damage}```")

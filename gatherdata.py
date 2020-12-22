@@ -243,13 +243,14 @@ with open(ROM, "rb") as f:
 # Items
 itemtypes = [
     "Other", "Weapon", "Armor", "Armgear", "Headgear", "Boots", "Psy-item", 
-    "Trident", "Rings", "Shirts", "Class-item", "Elemental Star"]
+    "Trident", "Ring", "Shirt", "Class-item", "Elemental Star"]
 flagdesc = ["Curses when equipped", "Can't be removed", "Rare item", "Important item",
         "Stackable", "Not transferable"]
 usetypes = ["Multi-Use", "Consumable", "Can Break", "Bestows ability", "Item transforms when used"]
 for item in itemdata:
     item.pop("unused")
     item["item_type"] = itemtypes[item["item_type"]]
+    item["unleash_ability"] = abilitydata[item["unleash_ability"]]["name"]
     item["effect_values"] = [i[1] for i in item["equipped_effects"] if i[0]]
     item["equipped_effects"] = [equipped_effects[i[0]]for i in item["equipped_effects"] if i[0]]
     item["equippable_by"] = [pcnames[i] for i in range(8) if item["equippable_by"] & 2**i]

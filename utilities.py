@@ -24,9 +24,9 @@ def namedict(jsonobj):
     return out
 
 
-DataTables, namemaps = {}, {}
+DataTables, namemaps, UserData = {}, {}, {}
 def load_data():
-    global DataTables, namemaps
+    global DataTables, namemaps, UserData
     print("Loading database...", end="\r")
     DataTables.clear(); namemaps.clear()
     for name in [
@@ -42,6 +42,8 @@ def load_data():
                     entry["DEF"] = int(1.25*entry["DEF"])
     for k,v in DataTables.items():
         namemaps[k] = namedict(v)
+    with open("userdata\\userdata.json") as f:
+        UserData = json.load(f)
     print("Loaded database    ")
 
 
